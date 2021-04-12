@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
-    apt-get install -y curl wget;
+    apt-get install -y curl wget jq;
     
     wget https://downloads.nordcdn.com/apps/linux/install.sh 2>/dev/null;
     chmod +x install.sh;
@@ -49,7 +49,13 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "check if vpn connection is active", type: "shell", inline: <<-SHELL
-    
+    # https://github.com/bubuntux/nordvpn/blob/master/Dockerfile
+    if test $( curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]' ) = "true" ; then 
+      echo "vpn is connected"; 
+    else 
+      >&2 echo "vpn isn't connected!";
+      exit 1; 
+    fi
   SHELL
 
   config.vm.provision "file", source: "settings.json", destination: "~/"
