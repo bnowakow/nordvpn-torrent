@@ -6,8 +6,7 @@ Vagrant.configure("2") do |config|
   config.vm.network "private_network", ip: "192.168.10.147"
   config.vm.network :forwarded_port, guest: 9091, host: 9091
 
-  config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/" #, type: "nfs"
-  #config.vm.synced_folder "/mnt/ubu-storage/Plex/transmission-daemon", "/var/lib/transmission-daemon/.config/transmission-daemon" #, type: "nfs"  
+  config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
 
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
@@ -17,9 +16,7 @@ Vagrant.configure("2") do |config|
     chmod +x install.sh;
     ./install.sh -n;
 
-    service nordvpn status
     service nordvpn start
-    service nordvpn status
   SHELL
 
   config.vm.provision "check environment variables", type: "shell" do |s|
@@ -36,16 +33,23 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "connect to vpn", type: "shell", inline: <<-SHELL
     chmod +x nord-run.sh
-    nordvpn whitelist add port 22
-    nordvpn whitelist add port 2222
-    nordvpn whitelist add port 9091
-    nordvpn status
+
+    # todo debug why "nordvpn whitelist add subnet 192.168.1.0/24" doesn't work (instead of definining ports)
+    nordvpn whitelist add port 22	# ssh
+    nordvpn whitelist add port 2222	# ssh
+    nordvpn whitelist add port 9091	# transmission-daemon
+    nordvpn whitelist add port 111	# nfs
+    nordvpn whitelist add port 2049     # nfs 
+
     bash nord-run.sh
-    nordvpn status
     nordvpn connect Czech_Republic -g P2P
-    nordvpn status
     nordvpn set killswitch on
+    nordvpn status
     rm nord-run.sh
+  SHELL
+
+  config.vm.provision "check if vpn connection is active", type: "shell", inline: <<-SHELL
+    
   SHELL
 
   config.vm.provision "file", source: "settings.json", destination: "~/"
@@ -54,9 +58,7 @@ Vagrant.configure("2") do |config|
     # todo check if nord is running
     ufw allow 9091,51413/tcp
     sudo apt-get -y install transmission-daemon
-    service transmission-daemon status
     service transmission-daemon stop
-    service transmission-daemon status
     # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
     cp settings.json /etc/transmission-daemon/settings.json
     chown debian-transmission:debian-transmission -R /etc/transmission-daemon
@@ -64,8 +66,7 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
-    #ln -sf /mnt/ubu-storage/Plex/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon
-    cp -r /vagrant/transmission-daemon /var/lib/transmission-daemon/.config/
+    ln -sf /mnt/ubu-storage/Plex/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon
     chown debian-transmission:debian-transmission -R /var/lib/transmission-daemon
     service transmission-daemon start
   SHELL

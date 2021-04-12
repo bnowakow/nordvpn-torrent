@@ -1,2 +1,4 @@
 .vagrant/
+settings.json
+*.swp
 
