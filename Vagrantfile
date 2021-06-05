@@ -10,11 +10,20 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
-    apt-get install -y curl wget jq;
-    
-    wget https://downloads.nordcdn.com/apps/linux/install.sh 2>/dev/null;
-    chmod +x install.sh;
-    ./install.sh -n;
+    apt-get install -y curl wget jq ntp;
+
+    #wget https://downloads.nordcdn.com/apps/linux/install.sh 2>/dev/null;
+    #chmod +x install.sh;
+    #./install.sh -n;
+
+    # NordVPN support suggested that way of installation
+    wget "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb"
+    sudo dpkg -i nordvpn-release_1.0.0_all.deb
+    sudo apt-get update
+    sudo apt-get upgrade -y
+    sudo apt-get install nordvpn -y
+
+    sudo usermod -aG nordvpn $USER
 
     service nordvpn start
   SHELL
@@ -28,7 +37,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "create nordvpn login script", type: "shell" do |s|
     username = ENV['NORDVPN_USERNAME']
     password = ENV['NORDVPN_PASSWORD']
-    s.inline = "echo \"#!/bin/bash\nnordvpn login -u '#{username}' -p '#{password}'\" > nord-run.sh"
+    s.inline = "echo \"#!/bin/bash\nnordvpn login --username '#{username}' --password '#{password}'\" > nord-run.sh"
   end
 
   config.vm.provision "connect to vpn", type: "shell", inline: <<-SHELL
@@ -40,11 +49,15 @@ Vagrant.configure("2") do |config|
     nordvpn whitelist add port 9091	# transmission-daemon
     nordvpn whitelist add port 111	# nfs
     nordvpn whitelist add port 2049     # nfs 
+    nordvpn set protocol tcp
+    #nordvpn set technology nordlynx
+    #nordvpn set obfuscate on
 
     bash nord-run.sh
-    nordvpn connect Czech_Republic -g P2P
+    nordvpn connect --group p2p Czech_Republic
     nordvpn set killswitch on
     nordvpn status
+
     rm nord-run.sh
   SHELL
 
