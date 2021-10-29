@@ -2,15 +2,32 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
+  #config.vm.box_version = "20210603.0.0"
+  #config.vm.box = "ubuntu/hirsute64"
+  #config.vm.box = "ubuntu/impish64"
 
   config.vm.network "private_network", ip: "192.168.10.147"
   config.vm.network :forwarded_port, guest: 9091, host: 9091
 
-  config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
+  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
+  # https://stackoverflow.com/a/35821148
+  config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "rsync", rsync__auto: true, rsync__exclude: ['lost+found', '/mnt/ubu-storage/lost+found']
+  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", mount_options: ["dmode=777,fmode=777"]
+  
+  # https://askubuntu.com/a/1015068
+  config.disksize.size = '70GB'
+
+  #config.vm.provision "nfs workaround", type: "shell", inline: <<-SHELL
+  #  apt-get update
+  #  apt-get install -y nfs-common
+  #  mkdir -p /mnt/ubu-storage;
+  #  mount -vvv -o vers=3,udp 192.168.1.77:/mnt/ubu-storage /mnt/ubu-storage
+  #  ls -la /mnt
+  #SHELL
 
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
-    apt-get install -y curl wget jq ntp;
+    apt-get install -y curl wget jq ntp ncdu;
 
     #wget https://downloads.nordcdn.com/apps/linux/install.sh 2>/dev/null;
     #chmod +x install.sh;
@@ -58,7 +75,8 @@ Vagrant.configure("2") do |config|
     nordvpn set killswitch on
     nordvpn status
 
-    rm nord-run.sh
+    # debug
+    #rm nord-run.sh
   SHELL
 
   config.vm.provision "check if vpn connection is active", type: "shell", inline: <<-SHELL
@@ -87,6 +105,9 @@ Vagrant.configure("2") do |config|
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
     ln -sf /mnt/ubu-storage/Plex/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon
     chown debian-transmission:debian-transmission -R /var/lib/transmission-daemon
+    chown debian-transmission:debian-transmission /var/lib/transmission-daemon/.config/transmission-daemon/*
+    chown debian-transmission:debian-transmission -R /mnt/ubu-storage/Plex
+    chmod 777 -R /mnt/ubu-storage/
     service transmission-daemon start
   SHELL
 

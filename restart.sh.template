@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#apt-cache madison linux-headers-truenas-amd64
+#sudo apt install linux-headers-truenas-amd64=5.10.42+truenas-3
+
+# add group vboxusers
+# https://maxedtech.com/how-to-enable-or-disable-secure-boot/
+#sudo /sbin/vboxconfig
+#sudo modprobe vboxdrv vboxnetflt vboxnetadp vboxpci 
+#sudo service vboxautostart-service restart
 vagrant box update
 vagrant box prune
 vagrant halt
