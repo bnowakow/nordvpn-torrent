@@ -1,29 +1,17 @@
-
-
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
-  #config.vm.box_version = "20210603.0.0"
-  #config.vm.box = "ubuntu/hirsute64"
-  #config.vm.box = "ubuntu/impish64"
 
   config.vm.network "private_network", ip: "192.168.10.147"
-  config.vm.network :forwarded_port, guest: 9091, host: 9091
+  config.vm.network :forwarded_port, guest: 9091, host: 9091, auto_correct: true
 
+  # native nfs
   #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
-  # https://stackoverflow.com/a/35821148
-  config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "rsync", rsync__auto: true, rsync__exclude: ['lost+found', '/mnt/ubu-storage/lost+found']
-  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", mount_options: ["dmode=777,fmode=777"]
   
+  # rsync as woraround that I use with vagrant rsync-back  
+  # https://stackoverflow.com/a/35821148
+  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "rsync", rsync__auto: true, rsync__exclude: ['lost+found', '/mnt/ubu-storage/lost+found']
   # https://askubuntu.com/a/1015068
-  config.disksize.size = '70GB'
-
-  #config.vm.provision "nfs workaround", type: "shell", inline: <<-SHELL
-  #  apt-get update
-  #  apt-get install -y nfs-common
-  #  mkdir -p /mnt/ubu-storage;
-  #  mount -vvv -o vers=3,udp 192.168.1.77:/mnt/ubu-storage /mnt/ubu-storage
-  #  ls -la /mnt
-  #SHELL
+  #config.disksize.size = '70GB'
 
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
@@ -61,12 +49,13 @@ Vagrant.configure("2") do |config|
     chmod +x nord-run.sh
 
     # todo debug why "nordvpn whitelist add subnet 192.168.1.0/24" doesn't work (instead of definining ports)
-    nordvpn whitelist add port 22	# ssh
-    nordvpn whitelist add port 2222	# ssh
-    nordvpn whitelist add port 9091	# transmission-daemon
-    nordvpn whitelist add port 111	# nfs
-    nordvpn whitelist add port 2049     # nfs 
-    nordvpn set protocol tcp
+    nordvpn whitelist add port 22	 # ssh
+    nordvpn whitelist add port 2222	 # ssh
+    nordvpn whitelist add port 9091	 # transmission-daemon
+    nordvpn whitelist add port 111	 # nfs
+    nordvpn whitelist add port 2049  # nfs 
+    nordvpn whitelist add port 33333 # rpcbind https://serverfault.com/a/823236
+    #nordvpn set protocol tcp
     #nordvpn set technology nordlynx
     #nordvpn set obfuscate on
 
@@ -87,13 +76,21 @@ Vagrant.configure("2") do |config|
       >&2 echo "vpn isn't connected!";
       exit 1; 
     fi
+
+  SHELL
+
+  config.vm.provision "nfs workaround", type: "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nfs-common
+    mkdir -p /mnt/ubu-storage;
+    mount -vvv -o vers=3,udp 10.0.2.2:/mnt/ubu-storage /mnt/ubu-storage
   SHELL
 
   config.vm.provision "file", source: "settings.json", destination: "~/"
 
   config.vm.provision "install transmission gui", type: "shell", inline: <<-SHELL
-    # todo check if nord is running
     ufw allow 9091,51413/tcp
+    
     sudo apt-get -y install transmission-daemon
     service transmission-daemon stop
     # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
