@@ -1,6 +1,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
 
+  # https://github.com/hashicorp/vagrant/issues/1437
+  #config.vm.network "private_network", type: "dhcp"
   config.vm.network "private_network", ip: "192.168.10.147"
   config.vm.network :forwarded_port, guest: 9091, host: 9091, auto_correct: true
 
@@ -9,9 +11,28 @@ Vagrant.configure("2") do |config|
   
   # rsync as woraround that I use with vagrant rsync-back  
   # https://stackoverflow.com/a/35821148
-  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "rsync", rsync__auto: true, rsync__exclude: ['lost+found', '/mnt/ubu-storage/lost+found']
+  config.vm.synced_folder "/mnt/PlexPool/plex", "/mnt/ubu-storage/Plex", type: "rsync", rsync__auto: true, 
+        rsync__exclude: ['lost+found', 'TV-Series-non-rsync', 'Movies-non-rsync'] 
   # https://askubuntu.com/a/1015068
-  #config.disksize.size = '70GB'
+  config.disksize.size = '100GB'
+
+  config.vm.provision "install dependencies for nfs workaround", type: "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nfs-common
+  SHELL
+
+  config.vm.provision "file", source: "settings.json", destination: "~/"
+
+  config.vm.provision "install transmission gui", type: "shell", inline: <<-SHELL
+    ufw allow 9091,51413/tcp
+
+    sudo apt-get -y install transmission-daemon
+    service transmission-daemon stop
+    # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
+    cp settings.json /etc/transmission-daemon/settings.json
+    chown debian-transmission:debian-transmission -R /etc/transmission-daemon
+    mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
+  SHELL
 
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
@@ -55,11 +76,12 @@ Vagrant.configure("2") do |config|
     nordvpn whitelist add port 111	 # nfs
     nordvpn whitelist add port 2049  # nfs 
     nordvpn whitelist add port 33333 # rpcbind https://serverfault.com/a/823236
-    #nordvpn set protocol tcp
+    nordvpn set protocol tcp
     #nordvpn set technology nordlynx
     #nordvpn set obfuscate on
 
     bash nord-run.sh
+    nordvpn set autoconnect on Czech_Republic p2p
     nordvpn connect --group p2p Czech_Republic
     nordvpn set killswitch on
     nordvpn status
@@ -69,6 +91,7 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "check if vpn connection is active", type: "shell", inline: <<-SHELL
+    #echo debug disabled; exit
     # https://github.com/bubuntux/nordvpn/blob/master/Dockerfile
     if test $( curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]' ) = "true" ; then 
       echo "vpn is connected"; 
@@ -80,23 +103,9 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "nfs workaround", type: "shell", inline: <<-SHELL
-    apt-get update
-    apt-get install -y nfs-common
+    echo debug disabled; exit
     mkdir -p /mnt/ubu-storage;
     mount -vvv -o vers=3,udp 10.0.2.2:/mnt/ubu-storage /mnt/ubu-storage
-  SHELL
-
-  config.vm.provision "file", source: "settings.json", destination: "~/"
-
-  config.vm.provision "install transmission gui", type: "shell", inline: <<-SHELL
-    ufw allow 9091,51413/tcp
-    
-    sudo apt-get -y install transmission-daemon
-    service transmission-daemon stop
-    # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
-    cp settings.json /etc/transmission-daemon/settings.json
-    chown debian-transmission:debian-transmission -R /etc/transmission-daemon
-    mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
@@ -107,5 +116,11 @@ Vagrant.configure("2") do |config|
     chmod 777 -R /mnt/ubu-storage/
     service transmission-daemon start
   SHELL
+
+  ## https://medium.com/@Sohjiro/add-public-key-to-vagrant-4bd5424521bf
+  #config.vm.provision "enable ssh password as workaround", type: "shell", inline: <<-EOC
+  #  sudo sed -i -e "\\#PasswordAuthentication yes# s#PasswordAuthentication yes#PasswordAuthentication no#g" /etc/ssh/sshd_config
+  #  sudo systemctl restart sshd.service
+  #EOC
 
 end
