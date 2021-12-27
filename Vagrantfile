@@ -34,6 +34,24 @@ Vagrant.configure("2") do |config|
     mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
   SHELL
 
+  config.vm.provision "install dependencies for nfs workaround", type: "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y nfs-common
+  SHELL
+
+  config.vm.provision "file", source: "settings.json", destination: "~/"
+
+  config.vm.provision "install transmission gui", type: "shell", inline: <<-SHELL
+    ufw allow 9091,51413/tcp
+
+    sudo apt-get -y install transmission-daemon
+    service transmission-daemon stop
+    # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
+    cp settings.json /etc/transmission-daemon/settings.json
+    chown debian-transmission:debian-transmission -R /etc/transmission-daemon
+    mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
+  SHELL
+
   config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
     apt-get update && \
     apt-get install -y curl wget jq ntp ncdu;
