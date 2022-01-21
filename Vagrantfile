@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/focal64"
+  config.vm.box = "bnowakow/nordvpn-torrent"
 
   # https://github.com/hashicorp/vagrant/issues/1437
   #config.vm.network "private_network", type: "dhcp"
@@ -16,17 +16,7 @@ Vagrant.configure("2") do |config|
   # https://askubuntu.com/a/1015068
   config.disksize.size = '100GB'
 
-  config.vm.provision "install dependencies for nfs workaround", type: "shell", inline: <<-SHELL
-    echo debug disabled; exit
-    apt-get update
-    apt-get install -y nfs-common
-  SHELL
-
   config.vm.provision "file", source: "settings.json", destination: "~/"
-
-  config.vm.provision "install transmission gui", type: "shell", inline: <<-SHELL
-    sudo apt-get -y install transmission-daemon
-  SHELL
 
   config.vm.provision "configure transmission gui", type: "shell", inline: <<-SHELL
     ufw allow 9091,51413/tcp
@@ -36,26 +26,6 @@ Vagrant.configure("2") do |config|
     cp settings.json /etc/transmission-daemon/settings.json
     chown debian-transmission:debian-transmission -R /etc/transmission-daemon
     mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
-  SHELL
-
-  config.vm.provision "install nordvpn", type: "shell", inline: <<-SHELL
-    apt-get update && \
-    apt-get install -y curl wget jq ntp ncdu;
-
-    #wget https://downloads.nordcdn.com/apps/linux/install.sh 2>/dev/null;
-    #chmod +x install.sh;
-    #./install.sh -n;
-
-    # NordVPN support suggested that way of installation
-    wget "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb"
-    sudo dpkg -i nordvpn-release_1.0.0_all.deb
-    sudo apt-get update
-    sudo apt-get upgrade -y
-    sudo apt-get install nordvpn -y
-
-    sudo usermod -aG nordvpn $USER
-
-    service nordvpn start
   SHELL
 
   config.vm.provision "check environment variables", type: "shell" do |s|
@@ -120,11 +90,5 @@ Vagrant.configure("2") do |config|
     chmod 777 -R /mnt/ubu-storage/
     service transmission-daemon start
   SHELL
-
-  ## https://medium.com/@Sohjiro/add-public-key-to-vagrant-4bd5424521bf
-  #config.vm.provision "enable ssh password as workaround", type: "shell", inline: <<-EOC
-  #  sudo sed -i -e "\\#PasswordAuthentication yes# s#PasswordAuthentication yes#PasswordAuthentication no#g" /etc/ssh/sshd_config
-  #  sudo systemctl restart sshd.service
-  #EOC
 
 end
