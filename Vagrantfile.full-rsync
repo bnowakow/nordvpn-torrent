@@ -1,14 +1,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "bnowakow/nordvpn-torrent"
 
-  # https://github.com/hashicorp/vagrant/issues/1437
-  #config.vm.network "private_network", type: "dhcp"
-  config.vm.network "private_network", ip: "192.168.10.147"
   config.vm.network :forwarded_port, guest: 9091, host: 9091, auto_correct: true
 
-  # native nfs
-  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
-  
   # rsync as woraround that I use with vagrant rsync-back  
   # https://stackoverflow.com/a/35821148
   config.vm.synced_folder "/mnt/PlexPool/plex", "/mnt/ubu-storage/Plex", type: "rsync", rsync__auto: true, 
@@ -47,9 +41,6 @@ Vagrant.configure("2") do |config|
     nordvpn whitelist add port 22	 # ssh
     nordvpn whitelist add port 2222	 # ssh
     nordvpn whitelist add port 9091	 # transmission-daemon
-    nordvpn whitelist add port 111	 # nfs
-    nordvpn whitelist add port 2049  # nfs 
-    nordvpn whitelist add port 33333 # rpcbind https://serverfault.com/a/823236
     nordvpn set protocol tcp
     #nordvpn set technology nordlynx
     #nordvpn set obfuscate on
@@ -74,12 +65,6 @@ Vagrant.configure("2") do |config|
       exit 1; 
     fi
 
-  SHELL
-
-  config.vm.provision "nfs workaround", type: "shell", inline: <<-SHELL
-    echo debug disabled; exit
-    mkdir -p /mnt/ubu-storage;
-    mount -vvv -o vers=3,udp 10.0.2.2:/mnt/ubu-storage /mnt/ubu-storage
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL

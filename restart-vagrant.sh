@@ -25,12 +25,6 @@ source ./nordvpn-set-password-in-env-var.sh
 #vagrant plugin install vagrant-rsync-back
 #vagrant plugin install vagrant-scp
 
-#sudo systemctl enable rpcbind.service
-#sudo systemctl enable nfs-kernel-server
-#sudo modprobe nfs
-#sudo service nfs-kernel-server stop
-#sudo service nfs-kernel-server start
-
 #vagrant up
 VAGRANT_VAGRANTFILE=Vagrantfile.full-rsync vagrant up
 
