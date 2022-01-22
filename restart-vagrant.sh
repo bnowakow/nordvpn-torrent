@@ -12,17 +12,11 @@ rm -f *log
 #sudo service vboxautostart-service restart
 vagrant box update &
 
-vagrant ssh -c 'sudo chmod -R 777 /mnt/ubu-storage/Plex/'
-VAGRANT_VAGRANTFILE=Vagrantfile.full-rsync vagrant rsync-back
-
 vagrant halt
 vagrant destroy -f
 source ./nordvpn-set-password-in-env-var.sh
 
-# https://stackoverflow.com/questions/43492322/vagrant-was-unable-to-mount-virtualbox-shared-folders
-#vagrant plugin install vagrant-vbguest
 #vagrant plugin install vagrant-disksize
-#vagrant plugin install vagrant-rsync-back
 #vagrant plugin install vagrant-scp
 
 #sudo systemctl enable rpcbind.service
@@ -30,9 +24,9 @@ source ./nordvpn-set-password-in-env-var.sh
 #sudo modprobe nfs
 #sudo service nfs-kernel-server stop
 #sudo service nfs-kernel-server start
+#sudo exportfs -r; sudo exportfs -a
 
-#vagrant up
-VAGRANT_VAGRANTFILE=Vagrantfile.full-rsync vagrant up
+vagrant up
 
 #ssh-keygen -f "/mnt/MargokPool/home/sup/.ssh/known_hosts" -R "[127.0.0.1]:2222"
 

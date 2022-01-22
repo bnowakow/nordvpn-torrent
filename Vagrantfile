@@ -8,13 +8,15 @@ Vagrant.configure("2") do |config|
 
   # native nfs
   #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
-  
-  # rsync as woraround that I use with vagrant rsync-back  
-  # https://stackoverflow.com/a/35821148
-  config.vm.synced_folder "/mnt/PlexPool/plex", "/mnt/ubu-storage/Plex", type: "rsync", rsync__auto: true, 
-        rsync__exclude: ['lost+found', 'TV-Series-non-rsync', 'Movies-non-rsync', 'Downloads'] 
-  # https://askubuntu.com/a/1015068
-  config.disksize.size = '100GB'
+
+  # TODO after vpn killswitch nfs connection doesn't work  
+  config.vm.provision "connect to nfs with manual workaround", type: "shell", inline: <<-SHELL
+    mkdir -p /mnt/ubu-storage;
+    # TODO check 10.0.2.2
+    mount -vvv -o vers=3,udp 192.168.1.49:/mnt/PlexPool/plex /mnt/ubu-storage
+    ls -la /mnt
+    ls -la /mnt/ubu-storage 
+  SHELL
 
   config.vm.provision "file", source: "settings.json", destination: "~/"
 
@@ -74,12 +76,6 @@ Vagrant.configure("2") do |config|
       exit 1; 
     fi
 
-  SHELL
-
-  config.vm.provision "nfs workaround", type: "shell", inline: <<-SHELL
-    echo debug disabled; exit
-    mkdir -p /mnt/ubu-storage;
-    mount -vvv -o vers=3,udp 10.0.2.2:/mnt/ubu-storage /mnt/ubu-storage
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
