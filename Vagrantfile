@@ -9,13 +9,9 @@ Vagrant.configure("2") do |config|
   # native nfs
   #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
 
-  # TODO after vpn killswitch nfs connection doesn't work  
   config.vm.provision "connect to nfs with manual workaround", type: "shell", inline: <<-SHELL
     mkdir -p /mnt/ubu-storage;
-    # TODO check 10.0.2.2
-    mount -vvv -o vers=3,udp 192.168.1.49:/mnt/PlexPool/plex /mnt/ubu-storage
-    ls -la /mnt
-    ls -la /mnt/ubu-storage 
+    mount -vvv -o vers=3 10.0.2.2:/mnt/PlexPool/plex /mnt/ubu-storage
   SHELL
 
   config.vm.provision "file", source: "settings.json", destination: "~/"
@@ -67,7 +63,6 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "check if vpn connection is active", type: "shell", inline: <<-SHELL
-    #echo debug disabled; exit
     # https://github.com/bubuntux/nordvpn/blob/master/Dockerfile
     if test $( curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]' ) = "true" ; then 
       echo "vpn is connected"; 
@@ -79,10 +74,10 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
-    ln -sf /mnt/ubu-storage/Plex/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon
+    ln -sf /mnt/ubu-storage/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon
     chown debian-transmission:debian-transmission -R /var/lib/transmission-daemon
     chown debian-transmission:debian-transmission /var/lib/transmission-daemon/.config/transmission-daemon/*
-    chown debian-transmission:debian-transmission -R /mnt/ubu-storage/Plex
+    chown debian-transmission:debian-transmission -R /mnt/ubu-storage
     chmod 777 -R /mnt/ubu-storage/
     service transmission-daemon start
   SHELL

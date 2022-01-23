@@ -12,8 +12,7 @@ rm -f *log
 #sudo service vboxautostart-service restart
 vagrant box update &
 
-vagrant halt
-vagrant destroy -f
+vagrant halt; vagrant destroy -f
 source ./nordvpn-set-password-in-env-var.sh
 
 #vagrant plugin install vagrant-disksize
@@ -24,7 +23,7 @@ source ./nordvpn-set-password-in-env-var.sh
 #sudo modprobe nfs
 #sudo service nfs-kernel-server stop
 #sudo service nfs-kernel-server start
-#sudo exportfs -r; sudo exportfs -a
+#sudo exportfs -r; sudo exportfs
 
 vagrant up
 
