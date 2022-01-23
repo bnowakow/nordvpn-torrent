@@ -15,8 +15,7 @@ vagrant box update &
 vagrant ssh -c 'sudo chmod -R 777 /mnt/ubu-storage/Plex/'
 VAGRANT_VAGRANTFILE=Vagrantfile.full-rsync vagrant rsync-back
 
-vagrant halt
-vagrant destroy -f
+vagrant halt; vagrant destroy -f
 source ./nordvpn-set-password-in-env-var.sh
 
 # https://stackoverflow.com/questions/43492322/vagrant-was-unable-to-mount-virtualbox-shared-folders
