@@ -14,18 +14,6 @@ Vagrant.configure("2") do |config|
     mount -vvv -o vers=3 10.0.2.2:/mnt/PlexPool/plex /mnt/ubu-storage
   SHELL
 
-  config.vm.provision "file", source: "settings.json", destination: "~/"
-
-  config.vm.provision "configure transmission gui", type: "shell", inline: <<-SHELL
-    ufw allow 9091,51413/tcp
-
-    service transmission-daemon stop
-    # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
-    cp settings.json /etc/transmission-daemon/settings.json
-    chown debian-transmission:debian-transmission -R /etc/transmission-daemon
-    mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
-  SHELL
-
   config.vm.provision "check environment variables", type: "shell" do |s|
     username = ENV['NORDVPN_USERNAME']
     password = ENV['NORDVPN_PASSWORD']
@@ -71,6 +59,18 @@ Vagrant.configure("2") do |config|
       exit 1; 
     fi
 
+  SHELL
+
+  config.vm.provision "file", source: "settings.json", destination: "~/"
+
+  config.vm.provision "configure transmission gui", type: "shell", inline: <<-SHELL
+    ufw allow 9091,51413/tcp
+
+    service transmission-daemon stop
+    # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
+    cp settings.json /etc/transmission-daemon/settings.json
+    chown debian-transmission:debian-transmission -R /etc/transmission-daemon
+    mv /var/lib/transmission-daemon/.config/transmission-daemon /var/lib/transmission-daemon/.config/transmission-daemon-old
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
