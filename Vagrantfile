@@ -40,6 +40,10 @@ Vagrant.configure("2") do |config|
     #nordvpn set technology nordlynx
     #nordvpn set obfuscate on
 
+    # workaround for NordVPN insights api https://github.com/bubuntux/nordvpn/commit/9c338b86f4bf30badcdf7ad18256937d5b203de5
+    nordvpn set cybersec off
+    nordvpn set dns 1.1.1.1 1.0.0.1
+
     bash nord-run.sh
     nordvpn set autoconnect on Czech_Republic p2p
     nordvpn connect --group p2p Czech_Republic
