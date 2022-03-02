@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 9091, host: 9091, auto_correct: true
 
   # native nfs
-  #config.vm.synced_folder "/mnt/ubu-storage/", "/mnt/ubu-storage/", type: "nfs"
+  #config.vm.synced_folder "/mnt/PlexPool/plex", "/mnt/ubu-storage/", type: "nfs", linux__nfs_options: ['rw','no_subtree_check','all_squash','insecure']
 
   config.vm.provision "connect to nfs with manual workaround", type: "shell", inline: <<-SHELL
     mkdir -p /mnt/ubu-storage;
@@ -55,6 +55,8 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "check if vpn connection is active", type: "shell", inline: <<-SHELL
+    #curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights
+    #echo disabled; exit;
     # https://github.com/bubuntux/nordvpn/blob/master/Dockerfile
     if test $( curl -m 10 -s https://api.nordvpn.com/v1/helpers/ips/insights | jq -r '.["protected"]' ) = "true" ; then 
       echo "vpn is connected"; 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+vagrant box update
+
 vagrant halt
 vagrant destroy -f
 VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant up

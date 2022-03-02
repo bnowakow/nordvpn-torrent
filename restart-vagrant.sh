@@ -22,8 +22,13 @@ source ./nordvpn-set-password-in-env-var.sh
 #sudo systemctl enable nfs-kernel-server
 #sudo modprobe nfs
 #sudo service nfs-kernel-server stop
-#sudo service nfs-kernel-server start
-#sudo exportfs -r; sudo exportfs
+
+grep Plex /etc/exports | grep insecure || {
+    echo '#nord-virtualbox' | sudo tee -a /etc/exports
+    echo '"/mnt/PlexPool/plex" 127.0.0.1(rw,no_subtree_check,all_squash,insecure,anonuid=114,anongid=119,fsid=365136519)' | sudo tee -a /etc/exports
+}
+sudo service nfs-kernel-server start
+sudo exportfs -r; sudo exportfs
 
 vagrant up
 
