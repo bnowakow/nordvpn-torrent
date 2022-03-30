@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# ask for password in the begning so it would be "cached" later
+sudo ls
+
+rm nordvpn-torrent.box 
 rm -f *log
 
 #apt-cache madison linux-headers-truenas-amd64

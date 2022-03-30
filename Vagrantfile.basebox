@@ -19,8 +19,8 @@ Vagrant.configure("2") do |config|
     #./install.sh -n;
 
     # NordVPN support suggested that way of installation
-    wget "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb"
-    sudo dpkg -i nordvpn-release_1.0.0_all.deb
+    wget "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn_3.12.5_amd64.deb"
+    sudo dpkg -i nordvpn*.deb
     sudo apt-get update
     sudo apt-get upgrade -y
     sudo apt-get install nordvpn -y
