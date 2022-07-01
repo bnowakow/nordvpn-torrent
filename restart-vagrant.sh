@@ -16,6 +16,8 @@ rm -f *log
 #sudo service vboxautostart-service restart
 vagrant box update &
 
+# when getting VBoxManage: error: Cannot unregister the machine '(...)' while it is locked do
+sudo killall -9 VBoxHeadless # https://stackoverflow.com/a/15175657 
 vagrant halt; vagrant destroy -f
 source ./nordvpn-set-password-in-env-var.sh
 

@@ -46,7 +46,14 @@ Vagrant.configure("2") do |config|
 
     bash nord-run.sh
     nordvpn set autoconnect on Czech_Republic p2p
-    nordvpn connect --group p2p Czech_Republic
+    
+    # below often freezes so we'll give it a timeout and retry after it
+    exit_status=1;
+    while [ ! $exit_status -eq 0 ]; do
+        echo "try to connect vpn"
+        timeout 60s nordvpn connect --group p2p Czech_Republic || return 1
+        exit_status=$?;
+    done
     nordvpn set killswitch on
     nordvpn status
 
