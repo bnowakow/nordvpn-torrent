@@ -3,4 +3,5 @@ settings.json
 *.swp
 nordvpn-torrent.box
 nordvpn-set-password-in-env-var.sh
+nfs-test/
 
