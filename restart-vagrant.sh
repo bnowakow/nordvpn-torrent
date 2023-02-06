@@ -14,7 +14,7 @@ rm -f *log
 #sudo /sbin/vboxconfig
 #sudo modprobe vboxdrv vboxnetflt vboxnetadp vboxpci 
 #sudo service vboxautostart-service restart
-vagrant box update &
+vagrant box update
 
 # when getting VBoxManage: error: Cannot unregister the machine '(...)' while it is locked do
 # disabled due to use of crashplan vagrant TODO detect when it happens and execute only then?
