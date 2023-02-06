@@ -39,10 +39,10 @@ vagrant package --output nordvpn-torrent.box
 
 vagrant destroy -f
 
-# https://www.vagrantup.com/vagrant-cloud/boxes/create
-# TODO fails with 'resource not fond :/
-#vagrant_upload_url=$(curl "https://vagrantcloud.com/api/v1/box/$vagrant_username/$vagrant_box_name/version/$vagrant_version-$guest_addition_version/provider/$vagrant_provider/upload?access_token=$vagrant_token" | jq '.upload_path' | sed 's/\"//')
-#curl -X PUT --upload-file $vagrant_box_name.box $vagrant_upload_url
-
 vagrant cloud publish --force $vagrant_username/$vagrant_box_name $vagrant_version-$guest_addition_version $vagrant_provider $vagrant_box_name.box
+
+
+echo
+# TODO can releasing could be automated?
+echo "go to https://app.vagrantup.com/bnowakow/boxes/nordvpn-torrent to publish release"
 
