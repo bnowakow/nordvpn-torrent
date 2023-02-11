@@ -33,8 +33,9 @@ source ./nordvpn-set-password-in-env-var.sh
 
 grep Plex /etc/exports | grep insecure || {
     echo '#nord-virtualbox' | sudo tee -a /etc/exports
-    echo '"/mnt/MargokPool/archive"     127.0.0.1(ro,no_subtree_check,all_squash,insecure,anonuid=114,anongid=119,fsid=365136518)' | sudo tee -a /etc/exports
-    echo '"/mnt/PlexPool/plex"          127.0.0.1(rw,no_subtree_check,all_squash,insecure,anonuid=114,anongid=119,fsid=365136519)' | sudo tee -a /etc/exports
+    echo '"/mnt/MargokPool/archive"       127.0.0.1(rw,no_subtree_check,insecure,sync,no_root_squash,anonuid=114,anongid=119,fsid=365136518)' | sudo tee -a /etc/exports
+    echo '"/mnt/PlexPool/plex"            127.0.0.1(rw,no_subtree_check,insecure,sync,no_root_squash,anonuid=114,anongid=119,fsid=365136519)' | sudo tee -a /etc/exports
+    echo '"/mnt/MargokPool/home/sup"      127.0.0.1(rw,no_subtree_check,insecure,sync,no_root_squash,anonuid=114,anongid=119,fsid=365136517)' | sudo tee -a /etc/exports
 }
 sudo service nfs-kernel-server start
 sudo exportfs -r; sudo exportfs
