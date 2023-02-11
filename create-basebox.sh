@@ -3,7 +3,8 @@
 VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant box update
 
 vagrant_username=bnowakow
-vagrant_version=$(vagrant box list | grep focal64 | tail -1 | sed 's/.*,\ //' | sed 's/)$//')
+basebox_of_basebox=$(grep -o '^[^#]*' Vagrantfile.basebox | grep 'config.vm.box' | sed 's/^[^"]*"//' | sed 's/\".*//')
+vagrant_version=$(vagrant box list | grep $basebox_of_basebox | tail -1 | sed 's/.*,\ //' | sed 's/)$//')
 vagrant_provider=virtualbox
 # if token doesn't exist run
 # vagrant login
@@ -27,6 +28,8 @@ else
     guest_addition_version=$(echo $vbguest | sed 's/.*(//' | sed 's/).*//')
 fi
 
+ubuntu_numerical_version=$(vagrant ssh -c "grep DISTRIB_RELEASE /etc/lsb-release | sed 's/.*=//' | sed 's/\r$//'" | sed 's/\r$//')
+
 # https://www.digitalocean.com/community/tutorials/how-to-create-a-vagrant-base-box-from-an-existing-one
 vagrant ssh -c 'sudo apt-get clean'
 vagrant ssh -c '#sudo dd if=/dev/zero of=/EMPTY bs=1M'
@@ -39,10 +42,6 @@ vagrant package --output nordvpn-torrent.box
 
 vagrant destroy -f
 
-vagrant cloud publish --force $vagrant_username/$vagrant_box_name $vagrant_version-$guest_addition_version $vagrant_provider $vagrant_box_name.box
 
-
-echo
-# TODO can releasing could be automated?
-echo "go to https://app.vagrantup.com/bnowakow/boxes/nordvpn-torrent to publish release"
+vagrant cloud publish --release --force $vagrant_username/$vagrant_box_name $ubuntu_numerical_version-$vagrant_version-$guest_addition_version $vagrant_provider $vagrant_box_name.box
 
