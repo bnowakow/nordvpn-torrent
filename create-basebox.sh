@@ -2,9 +2,10 @@
 
 VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant box update
 
-vagrant_username=bnowakow
 basebox_of_basebox=$(grep -o '^[^#]*' Vagrantfile.basebox | grep 'config.vm.box' | sed 's/^[^"]*"//' | sed 's/\".*//')
 vagrant_version=$(vagrant box list | grep $basebox_of_basebox | tail -1 | sed 's/.*,\ //' | sed 's/)$//')
+
+vagrant_username=bnowakow
 vagrant_provider=virtualbox
 # if token doesn't exist run
 # vagrant login
@@ -15,7 +16,7 @@ vagrant_box_name=nordvpn-torrent
 
 vagrant halt
 vagrant destroy -f
-VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant up
+VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant up | tee vagrant.output
 
 sleep 60; # for vbguest to start
 
@@ -28,6 +29,11 @@ else
     guest_addition_version=$(echo $vbguest | sed 's/.*(//' | sed 's/).*//')
 fi
 
+if ! echo $guest_addition_version | egrep "^[0-9]*.[0-9]*.[0-9]*$"; then
+#default: Guest Additions Version: 6.0.0 r127566
+    guest_addition_version=$(grep "Guest Additions Version" vagrant.output | sed 's/.*Guest\ Additions\ Version:.//' | sed 's/\ .*//')
+fi
+
 ubuntu_numerical_version=$(vagrant ssh -c "grep DISTRIB_RELEASE /etc/lsb-release | sed 's/.*=//' | sed 's/\r$//'" | sed 's/\r$//')
 
 # https://www.digitalocean.com/community/tutorials/how-to-create-a-vagrant-base-box-from-an-existing-one
@@ -37,6 +43,7 @@ vagrant ssh -c 'sudo rm -f /EMPTY'
 vagrant ssh -c 'cat /dev/null > ~/.bash_history && history -c'
 
 rm nordvpn-torrent.box
+rm vagrant.output
 vagrant package --output nordvpn-torrent.box
 #vagrant box add --force $vagrant_username/nordvpn-torrent $vagrant_box_name.box
 
