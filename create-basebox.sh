@@ -1,5 +1,7 @@
 #!/bin/bash -x
 
+# if there will be "The requested URL returned error: 416" after vagrant box update
+# run vagrant box --debug update, there will be tmp path of box, remove it
 VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant box update
 
 basebox_of_basebox=$(grep -o '^[^#]*' Vagrantfile.basebox | grep 'config.vm.box' | sed 's/^[^"]*"//' | sed 's/\".*//')
@@ -17,6 +19,8 @@ vagrant_box_name=nordvpn-torrent
 vagrant halt
 vagrant destroy -f
 VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant up | tee vagrant.output
+
+# TODO verify if proviosion finished succesfully
 
 sleep 60; # for vbguest to start
 
