@@ -44,4 +44,6 @@ vagrant up
 
 #ssh-keygen -f "/mnt/MargokPool/home/sup/.ssh/known_hosts" -R "[127.0.0.1]:2222"
 
-vagrant box prune
+# remove only boxes that aren't used by running VMs
+vagrant box prune --force --keep-active-boxe
+
