@@ -95,4 +95,12 @@ Vagrant.configure("2") do |config|
     service transmission-daemon start
   SHELL
 
+  config.vm.provision "file", source: "transmission-daemon-keepalive.sh", destination: "~/"
+
+  config.vm.provision "run transmission-daemon-keepalive.sh", type: "shell", inline: <<-SHELL
+    pwd
+    ls -la
+    ./transmission-daemon-keepalive.sh &
+  SHELL
+
 end
