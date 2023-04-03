@@ -15,15 +15,13 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "check environment variables", type: "shell" do |s|
-    username = ENV['NORDVPN_USERNAME']
-    password = ENV['NORDVPN_PASSWORD']
-    s.inline = "if [[ -z \"#{username}\" || -z \"#{password}\" ]]; then >&2 echo 'please set NORDVPN_USERNAME and NORDVPN_PASSWORD env variables'; exit 1; else echo 'env variables are set'; fi;"
+    token = ENV['NORDVPN_TOKEN']
+    s.inline = "if [[ -z \"#{token}\" ]]; then >&2 echo 'please set NORDVPN_TOKEN env variables'; exit 1; else echo 'env variables are set'; fi;"
   end
 
   config.vm.provision "create nordvpn login script", type: "shell" do |s|
-    username = ENV['NORDVPN_USERNAME']
-    password = ENV['NORDVPN_PASSWORD']
-    s.inline = "echo \"#!/bin/bash\nnordvpn login --username '#{username}' --password '#{password}'\" > nord-run.sh"
+    token = ENV['NORDVPN_TOKEN']
+    s.inline = "echo \"#!/bin/bash\nnordvpn login --token '#{token}'\" > nord-run.sh"
   end
 
   config.vm.provision "connect to vpn", type: "shell", inline: <<-SHELL
