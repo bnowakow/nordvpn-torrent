@@ -24,18 +24,8 @@ Vagrant.configure("2") do |config|
     apt-get update && \
     apt-get install -y curl wget jq ntp ncdu;
 
-    #wget https://downloads.nordcdn.com/apps/linux/install.sh 2>/dev/null;
-    #chmod +x install.sh;
-    #./install.sh -n;
-
-    #wget "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb"; # old version
-    # NordVPN support suggested that way of installation
-    wget "https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn_3.14.1_amd64.deb";
-
-    sudo dpkg -i nordvpn*.deb
-    sudo apt-get update
-    sudo apt-get upgrade -y
-    sudo apt-get install nordvpn -y
+    # https://support.nordvpn.com/Connectivity/Linux/1325531132/Installing-and-using-NordVPN-on-Debian-Ubuntu-Raspberry-Pi-Elementary-OS-and-Linux-Mint.htm
+    sh <(curl -sSf https://downloads.nordcdn.com/apps/linux/install.sh)
 
     sudo usermod -aG nordvpn $USER
 
