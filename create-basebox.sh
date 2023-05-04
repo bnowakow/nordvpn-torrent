@@ -53,6 +53,7 @@ vagrant package --output nordvpn-torrent.box
 
 vagrant destroy -f
 
-
 vagrant cloud publish --release --force $vagrant_username/$vagrant_box_name $ubuntu_numerical_version-$vagrant_version-$guest_addition_version $vagrant_provider $vagrant_box_name.box
+
+rm $vagrant_box_name.box
 
