@@ -7,11 +7,11 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 9091, host: 9091, auto_correct: true
 
   # native nfs
-  #config.vm.synced_folder "/mnt/PlexPool/plex", "/mnt/ubu-storage/", type: "nfs", linux__nfs_options: ['rw','no_subtree_check','all_squash','insecure']
+  #config.vm.synced_folder "/mnt/PlexPool/plex", "/mnt/PlexPool/plex", type: "nfs", linux__nfs_options: ['rw','no_subtree_check','all_squash','insecure']
 
   config.vm.provision "connect to nfs with manual workaround", type: "shell", inline: <<-SHELL
-    mkdir -p /mnt/ubu-storage;
-    mount -vvv -o vers=3 10.0.2.2:/mnt/PlexPool/plex /mnt/ubu-storage
+    mkdir -p /mnt/PlexPool/plex;
+    mount -vvv -o vers=3 10.0.2.2:/mnt/PlexPool/plex /mnt/PlexPool/plex
   SHELL
 
   config.vm.provision "check environment variables", type: "shell" do |s|
@@ -78,6 +78,8 @@ Vagrant.configure("2") do |config|
     ufw allow 9091,51413/tcp
 
     service transmission-daemon stop
+    usermod -u 568 debian-transmission
+    groupmod -g 568 debian-transmission
     # https://linuxconfig.org/how-to-set-up-transmission-daemon-on-a-raspberry-pi-and-control-it-via-web-interface
     cp settings.json /etc/transmission-daemon/settings.json
     chown debian-transmission:debian-transmission -R /etc/transmission-daemon
@@ -85,11 +87,10 @@ Vagrant.configure("2") do |config|
   SHELL
 
   config.vm.provision "run transmission gui", type: "shell", inline: <<-SHELL
-    ln -sf /mnt/ubu-storage/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon
+    ln -sf /mnt/PlexPool/plex/transmission-daemon/ /var/lib/transmission-daemon/.config/transmission-daemon  
     chown debian-transmission:debian-transmission -R /var/lib/transmission-daemon
     chown debian-transmission:debian-transmission /var/lib/transmission-daemon/.config/transmission-daemon/*
-    chown debian-transmission:debian-transmission -R /mnt/ubu-storage
-    chmod 777 -R /mnt/ubu-storage/
+    chown debian-transmission:debian-transmission -R /mnt/PlexPool/plex
     service transmission-daemon start
   SHELL
 
