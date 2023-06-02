@@ -18,6 +18,7 @@ vagrant_box_name=nordvpn-torrent
 
 vagrant halt
 vagrant destroy -f
+#VAGRANT_VAGRANTFILE=Vagrantfile.basebox VAGRANT_LOG=debug vagrant up | tee vagrant.output
 VAGRANT_VAGRANTFILE=Vagrantfile.basebox vagrant up | tee vagrant.output
 
 # TODO verify if proviosion finished succesfully
