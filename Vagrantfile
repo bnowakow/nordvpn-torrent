@@ -34,6 +34,7 @@ Vagrant.configure("2") do |config|
     nordvpn whitelist add port 111	 # nfs
     nordvpn whitelist add port 2049  # nfs 
     nordvpn whitelist add port 33333 # rpcbind https://serverfault.com/a/823236
+    nordvpn whitelist add port 10050 # zabbix-agent2
     nordvpn set protocol tcp
     #nordvpn set technology nordlynx
     #nordvpn set obfuscate on
